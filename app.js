@@ -4,9 +4,16 @@ const buttons = document.querySelectorAll("#ui button");
 const startBtn = document.getElementById("startBtn");
 const startScreen = document.getElementById("start");
 
+const countdown = document.getElementById("countdown");
+const ring = document.querySelector(".ring");
+const countText = document.getElementById("countText");
+
 let story = {};
 let currentNode = null;
 let autoPickTimer = null;
+let countdownInterval = null;
+
+const RING_LENGTH = 226;
 
 fetch("data/story.json")
   .then(res => res.json())
@@ -19,12 +26,15 @@ startBtn.onclick = () => {
 
 function loadNode(id) {
   currentNode = story[id];
-  clearTimeout(autoPickTimer);
+  clearTimers();
 
   video.src = currentNode.video;
   video.currentTime = 0;
+  video.muted = true;
   video.play();
+
   ui.classList.add("hidden");
+  countdown.classList.add("hidden");
 
   if (!currentNode.choices) return;
 
@@ -35,7 +45,7 @@ function loadNode(id) {
   const checkTime = () => {
     if (video.currentTime >= currentNode.choiceTime) {
       ui.classList.remove("hidden");
-      startAutoPick();
+      startCountdown(currentNode.timeout);
       video.removeEventListener("timeupdate", checkTime);
     }
   };
@@ -43,17 +53,45 @@ function loadNode(id) {
   video.addEventListener("timeupdate", checkTime);
 }
 
-function startAutoPick() {
-  if (!currentNode.timeout || !currentNode.default) return;
+function startCountdown(seconds) {
+  let remaining = seconds;
+  countdown.classList.remove("hidden");
+  countdown.classList.remove("danger");
 
-  autoPickTimer = setTimeout(() => {
-    choose(currentNode.default);
-  }, currentNode.timeout * 1000);
+  updateRing(remaining, seconds);
+
+  countText.textContent = remaining;
+
+  countdownInterval = setInterval(() => {
+    remaining--;
+
+    updateRing(remaining, seconds);
+    countText.textContent = remaining;
+
+    if (remaining <= 3) {
+      countdown.classList.add("danger");
+    }
+
+    if (remaining <= 0) {
+      clearTimers();
+      choose(currentNode.default);
+    }
+  }, 1000);
+}
+
+function updateRing(remaining, total) {
+  const progress = remaining / total;
+  ring.style.strokeDashoffset = RING_LENGTH * (1 - progress);
+}
+
+function clearTimers() {
+  clearTimeout(autoPickTimer);
+  clearInterval(countdownInterval);
 }
 
 function choose(key) {
   if (!currentNode || !currentNode.choices) return;
-  clearTimeout(autoPickTimer);
+  clearTimers();
 
   const choice = currentNode.choices.find(c => c.key === key);
   if (choice) loadNode(choice.next);
@@ -67,5 +105,3 @@ document.addEventListener("keydown", e => {
   if (e.key.toLowerCase() === "a") choose("A");
   if (e.key.toLowerCase() === "b") choose("B");
 });
-
-
