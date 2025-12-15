@@ -1,0 +1,20 @@
+{
+  "intro": {
+    "video": "videos/intro.mp4",
+    "choiceTime": 5,
+    "choices": [
+      { "key": "A", "label": "Left", "next": "left" },
+      { "key": "B", "label": "Right", "next": "right" }
+    ]
+  },
+
+  "left": {
+    "video": "videos/left.mp4",
+    "end": true
+  },
+
+  "right": {
+    "video": "videos/right.mp4",
+    "end": true
+  }
+}
