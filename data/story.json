@@ -5,8 +5,8 @@
     "timeout": 4,
     "default": "A",
     "choices": [
-      { "key": "A", "label": "Go left", "next": "left" },
-      { "key": "B", "label": "Go right", "next": "right" }
+      { "key": "A", "label": "It's MASSIVE", "next": "left" },
+      { "key": "B", "label": "It's not that big actually", "next": "right" }
     ]
   },
 
