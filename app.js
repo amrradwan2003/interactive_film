@@ -6,6 +6,7 @@ const startScreen = document.getElementById("start");
 
 let story = {};
 let currentNode = null;
+let autoPickTimer = null;
 
 fetch("data/story.json")
   .then(res => res.json())
@@ -18,6 +19,8 @@ startBtn.onclick = () => {
 
 function loadNode(id) {
   currentNode = story[id];
+  clearTimeout(autoPickTimer);
+
   video.src = currentNode.video;
   video.currentTime = 0;
   video.play();
@@ -32,6 +35,7 @@ function loadNode(id) {
   const checkTime = () => {
     if (video.currentTime >= currentNode.choiceTime) {
       ui.classList.remove("hidden");
+      startAutoPick();
       video.removeEventListener("timeupdate", checkTime);
     }
   };
@@ -39,8 +43,18 @@ function loadNode(id) {
   video.addEventListener("timeupdate", checkTime);
 }
 
+function startAutoPick() {
+  if (!currentNode.timeout || !currentNode.default) return;
+
+  autoPickTimer = setTimeout(() => {
+    choose(currentNode.default);
+  }, currentNode.timeout * 1000);
+}
+
 function choose(key) {
   if (!currentNode || !currentNode.choices) return;
+  clearTimeout(autoPickTimer);
+
   const choice = currentNode.choices.find(c => c.key === key);
   if (choice) loadNode(choice.next);
 }
@@ -53,4 +67,5 @@ document.addEventListener("keydown", e => {
   if (e.key.toLowerCase() === "a") choose("A");
   if (e.key.toLowerCase() === "b") choose("B");
 });
+
 
